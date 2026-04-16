@@ -26,6 +26,12 @@ public class Tutorial {
     private Long id;
     
     /**
+     * 所属菜谱ID
+     */
+    @TableField("dish_id")
+    private Long dishId;
+    
+    /**
      * 教程标题
      */
     @TableField("title")
@@ -42,6 +48,12 @@ public class Tutorial {
      */
     @TableField("url")
     private String url;
+    
+    /**
+     * 排序顺序
+     */
+    @TableField("sort_order")
+    private Integer sortOrder;
     
     /**
      * 创建时间

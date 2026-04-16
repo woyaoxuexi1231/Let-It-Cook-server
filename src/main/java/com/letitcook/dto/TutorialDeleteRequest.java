@@ -3,15 +3,15 @@ package com.letitcook.dto;
 import lombok.Data;
 
 /**
- * 随机菜谱请求
+ * 教程删除请求
  * 
  * @author hulei
  * @since 2026/4/16
  */
 @Data
-public class DishRandomRequest {
+public class TutorialDeleteRequest {
     /**
-     * 获取数量
+     * 教程ID
      */
-    private Integer count;
+    private Long id;
 }

@@ -4,21 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.letitcook.entity.Dish;
-import com.letitcook.entity.DishTutorial;
 import com.letitcook.entity.Tutorial;
 import com.letitcook.mapper.DishMapper;
-import com.letitcook.mapper.DishTutorialMapper;
 import com.letitcook.mapper.TutorialMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 菜谱服务
+ * 教程直接通过 dish_id 关联到菜谱,不需要中间表
  * 
  * @author hulei
  * @since 2026/4/16
@@ -30,7 +27,6 @@ public class DishService {
 
     private final DishMapper dishMapper;
     private final TutorialMapper tutorialMapper;
-    private final DishTutorialMapper dishTutorialMapper;
 
     /**
      * 获取所有菜谱列表
@@ -49,25 +45,21 @@ public class DishService {
     }
 
     /**
-     * 获取菜谱及其关联的教程列表
+     * 根据ID获取教程
+     */
+    public Tutorial getById_Tutorial(Long id) {
+        return tutorialMapper.selectById(id);
+    }
+
+    /**
+     * 获取指定菜谱的教程列表
+     * 教程直接通过 dish_id 关联
      */
     public List<Tutorial> getTutorialsByDishId(Long dishId) {
-        // 查询关联关系
-        LambdaQueryWrapper<DishTutorial> dtQueryWrapper = new LambdaQueryWrapper<>();
-        dtQueryWrapper.eq(DishTutorial::getDishId, dishId)
-                     .orderByAsc(DishTutorial::getSortOrder);
-        List<DishTutorial> dishTutorials = dishTutorialMapper.selectList(dtQueryWrapper);
-
-        // 获取教程详情
-        List<Tutorial> tutorials = new ArrayList<>();
-        for (DishTutorial dt : dishTutorials) {
-            Tutorial tutorial = tutorialMapper.selectById(dt.getTutorialId());
-            if (tutorial != null) {
-                tutorials.add(tutorial);
-            }
-        }
-        
-        return tutorials;
+        LambdaQueryWrapper<Tutorial> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Tutorial::getDishId, dishId)
+                   .orderByAsc(Tutorial::getSortOrder);
+        return tutorialMapper.selectList(queryWrapper);
     }
 
     /**
@@ -96,79 +88,51 @@ public class DishService {
 
     /**
      * 删除菜谱(逻辑删除)
+     * 数据库设置了 ON DELETE CASCADE,会自动删除关联的教程
      */
     @Transactional(rollbackFor = Exception.class)
     public void deleteDish(Long id) {
         dishMapper.deleteById(id);
-        log.info("✅ 菜谱删除成功, ID: {}", id);
+        log.info("✅ 菜谱删除成功, ID: {}, 关联教程已自动删除", id);
     }
 
     /**
-     * 创建教程
+     * 创建教程(必须指定所属菜谱)
      */
     @Transactional(rollbackFor = Exception.class)
     public Tutorial createTutorial(Tutorial tutorial) {
+        if (tutorial.getDishId() == null) {
+            throw new IllegalArgumentException("❌ 教程必须指定所属菜谱ID");
+        }
+        
         tutorial.setCreateTime(LocalDateTime.now());
         tutorial.setUpdateTime(LocalDateTime.now());
         tutorial.setIsDeleted(0);
         tutorialMapper.insert(tutorial);
-        log.info("✅ 教程创建成功, ID: {}, 标题: {}", tutorial.getId(), tutorial.getTitle());
+        log.info("✅ 教程创建成功, ID: {}, 标题: {}, 菜谱ID: {}", 
+            tutorial.getId(), tutorial.getTitle(), tutorial.getDishId());
         return tutorial;
     }
 
     /**
-     * 创建菜谱-教程关联
+     * 更新教程
      */
     @Transactional(rollbackFor = Exception.class)
-    public void createDishTutorial(Long dishId, Long tutorialId, Integer sortOrder) {
-        DishTutorial dishTutorial = new DishTutorial();
-        dishTutorial.setDishId(dishId);
-        dishTutorial.setTutorialId(tutorialId);
-        dishTutorial.setSortOrder(sortOrder);
-        dishTutorial.setCreateTime(LocalDateTime.now());
-        dishTutorial.setUpdateTime(LocalDateTime.now());
-        dishTutorial.setIsDeleted(0);
-        dishTutorialMapper.insert(dishTutorial);
-        log.info("✅ 菜谱-教程关联创建成功, 菜谱ID: {}, 教程ID: {}, 排序: {}", dishId, tutorialId, sortOrder);
+    public Tutorial updateTutorial(Tutorial tutorial) {
+        tutorial.setUpdateTime(LocalDateTime.now());
+        tutorialMapper.updateById(tutorial);
+        log.info("✅ 教程更新成功, ID: {}", tutorial.getId());
+        return tutorial;
     }
 
     /**
-     * 删除菜谱的所有教程关联
+     * 删除教程(逻辑删除)
      */
     @Transactional(rollbackFor = Exception.class)
-    public void deleteDishTutorialsByDishId(Long dishId) {
-        LambdaQueryWrapper<DishTutorial> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(DishTutorial::getDishId, dishId);
-        dishTutorialMapper.delete(queryWrapper);
-        log.info("✅ 菜谱关联教程已删除, 菜谱ID: {}", dishId);
+    public void deleteTutorial(Long id) {
+        tutorialMapper.deleteById(id);
+        log.info("✅ 教程删除成功, ID: {}", id);
     }
 
-    /**
-     * 根据教程信息查找已存在的教程
-     */
-    public Tutorial findExistingTutorial(String title, String type, String url) {
-        LambdaQueryWrapper<Tutorial> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Tutorial::getTitle, title)
-                   .eq(Tutorial::getType, type)
-                   .eq(Tutorial::getUrl, url);
-        return tutorialMapper.selectOne(queryWrapper);
-    }
 
-    /**
-     * 获取随机菜谱
-     */
-    public List<Dish> getRandomDishes(int count) {
-        List<Dish> allDishes = getAllDishes();
-        if (allDishes.isEmpty()) {
-            return new ArrayList<>();
-        }
-        
-        // 随机打乱
-        List<Dish> shuffled = new ArrayList<>(allDishes);
-        java.util.Collections.shuffle(shuffled);
-        
-        // 返回指定数量
-        int actualCount = Math.min(count, shuffled.size());
-        return shuffled.subList(0, actualCount);
-    }
 }
