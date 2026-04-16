@@ -48,6 +48,13 @@
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
         </dependency>
+
+        <!-- MyBatis-Plus -->
+        <dependency>
+            <groupId>org.hulei</groupId>
+            <artifactId>common-entity-mybatis-plus-starter</artifactId>
+            <version>1.0.0.5-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

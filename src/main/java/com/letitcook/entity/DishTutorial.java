@@ -10,14 +10,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 菜谱表
+ * 菜谱-教程关联表
  *
  * @author hulei
  * @since 2026/4/16
  */
 @Data
-@TableName("cook_dish")
-public class Dish {
+@TableName("cook_dish_tutorial")
+public class DishTutorial {
     
     /**
      * 主键ID
@@ -26,16 +26,22 @@ public class Dish {
     private Long id;
     
     /**
-     * 菜谱名称
+     * 菜谱ID
      */
-    @TableField("name")
-    private String name;
+    @TableField("dish_id")
+    private Long dishId;
     
     /**
-     * 菜谱图片URL
+     * 教程ID
      */
-    @TableField("image")
-    private String image;
+    @TableField("tutorial_id")
+    private Long tutorialId;
+    
+    /**
+     * 排序顺序
+     */
+    @TableField("sort_order")
+    private Integer sortOrder;
     
     /**
      * 创建时间
