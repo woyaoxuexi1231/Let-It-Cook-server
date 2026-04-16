@@ -50,4 +50,26 @@
         </dependency>
     </dependencies>
 
+
+    <build>
+        <!--
+        这个配置的原理是：Maven 在构建的 process-resources 阶段调用 maven-resources-plugin，
+        当发现 <filtering>true</filtering> 时，会在复制资源文件到输出目录的过程中，扫描文件内容中的 ${...} 占位符，
+        并用当前构建上下文中的属性值（如 pom.xml 中定义的 <properties>、命令行 -D 参数、系统属性等）进行替换，从而实现配置的动态注入。
+
+            Resources: 资源过滤配置
+            - <filtering>true</filtering>: 启用占位符替换，让 Maven 解析资源文件中的 @xxx@ 占位符
+            - 前提条件：必须配置此项，否则 @project.artifactId@ 等占位符不会被替换
+            - Maven 内置属性：@project.artifactId@、@project.version@、@project.groupId@
+            - 自定义属性：在 <properties> 或 <profile><properties> 中定义
+        -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+
 </project>
