@@ -5,6 +5,13 @@ spring:
     active: nacos
   main:
     allow-circular-references: true
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB      # 单个文件最大 500MB
+      max-request-size: 500MB   # 整个请求最大 500MB
+      file-size-threshold: 2MB  # 超过 2MB 写入磁盘
   # 数据源配置
   datasource:
     url: jdbc:mysql://192.168.2.102:3306/test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true

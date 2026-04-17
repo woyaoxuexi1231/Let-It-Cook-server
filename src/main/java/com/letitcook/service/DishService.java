@@ -1,22 +1,26 @@
 package com.letitcook.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.letitcook.entity.Dish;
 import com.letitcook.entity.Tutorial;
 import com.letitcook.mapper.DishMapper;
 import com.letitcook.mapper.TutorialMapper;
+import com.letitcook.vo.DishVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 菜谱服务
  * 教程直接通过 dish_id 关联到菜谱,不需要中间表
- * 
+ *
  * @author hulei
  * @since 2026/4/16
  */
@@ -29,12 +33,48 @@ public class DishService {
     private final TutorialMapper tutorialMapper;
 
     /**
-     * 获取所有菜谱列表
+     * 分页获取所有菜谱列表
      */
-    public List<Dish> getAllDishes() {
+    public IPage<Dish> getAllDishes(Integer pageNum, Integer pageSize) {
+        Page<Dish> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Dish::getCreateTime);
-        return dishMapper.selectList(queryWrapper);
+        return dishMapper.selectPage(page, queryWrapper);
+    }
+
+    /**
+     * 分页获取所有菜谱列表（包含教程数量）
+     */
+    public IPage<DishVO> getAllDishesWithTutorialCount(Integer pageNum, Integer pageSize) {
+        Page<Dish> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Dish::getCreateTime);
+        IPage<Dish> dishPage = dishMapper.selectPage(page, queryWrapper);
+
+        // 转换为DishVO并设置教程数量
+        List<DishVO> dishVOList = dishPage.getRecords().stream()
+                .map(dish -> {
+                    DishVO vo = new DishVO();
+                    vo.setId(dish.getId());
+                    vo.setName(dish.getName());
+                    vo.setImage(dish.getImage());
+                    vo.setCuisine(dish.getCuisine());
+                    vo.setCreateTime(dish.getCreateTime());
+                    vo.setUpdateTime(dish.getUpdateTime());
+                    vo.setIsDeleted(dish.getIsDeleted());
+                    vo.setCreateBy(dish.getCreateBy());
+                    vo.setUpdateBy(dish.getUpdateBy());
+                    // 计算教程数量
+                    int count = getTutorialsByDishId(dish.getId()).size();
+                    vo.setTutorialCount(count);
+                    return vo;
+                })
+                .collect(Collectors.toList());
+
+        // 构建新的Page
+        Page<DishVO> result = new Page<>(dishPage.getCurrent(), dishPage.getSize(), dishPage.getTotal());
+        result.setRecords(dishVOList);
+        return result;
     }
 
     /**
@@ -104,12 +144,12 @@ public class DishService {
         if (tutorial.getDishId() == null) {
             throw new IllegalArgumentException("❌ 教程必须指定所属菜谱ID");
         }
-        
+
         tutorial.setCreateTime(LocalDateTime.now());
         tutorial.setUpdateTime(LocalDateTime.now());
         tutorial.setIsDeleted(0);
         tutorialMapper.insert(tutorial);
-        log.info("✅ 教程创建成功, ID: {}, 标题: {}, 菜谱ID: {}", 
+        log.info("✅ 教程创建成功, ID: {}, 标题: {}, 菜谱ID: {}",
             tutorial.getId(), tutorial.getTitle(), tutorial.getDishId());
         return tutorial;
     }

@@ -19,5 +19,14 @@ public class DishDTO {
     private Long id;
     private String name;
     private String image;
-    private List<Tutorial> tutorials;
+    
+    /**
+     * 分页参数 - 当前页码
+     */
+    private Integer pageNum;
+    
+    /**
+     * 分页参数 - 每页数量
+     */
+    private Integer pageSize;
 }
