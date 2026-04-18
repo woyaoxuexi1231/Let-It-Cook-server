@@ -2,9 +2,12 @@ package com.letitcook.controller;
 
 import com.letitcook.common.Result;
 import com.letitcook.entity.Dish;
+import com.letitcook.entity.RandomDishRecord;
 import com.letitcook.entity.Tutorial;
 import com.letitcook.service.DishService;
+import com.letitcook.service.RandomDishRecordService;
 import com.letitcook.vo.DishVO;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +36,7 @@ import java.util.stream.Collectors;
 public class ClientDishController {
 
     private final DishService dishService;
+    private final RandomDishRecordService randomDishRecordService;
 
     /**
      * 获取所有菜谱列表（简化版，仅包含id、name、image、tutorialCount）
@@ -56,12 +61,57 @@ public class ClientDishController {
     }
 
     /**
-     * 获取随机菜谱
+     * 获取上次随机结果（进页面时调用）
+     */
+    @PostMapping("/last-result")
+    public Result<List<Map<String, Object>>> getLastResult(HttpServletRequest httpRequest) {
+        String ip = getClientIp(httpRequest);
+        log.info("✅ Client端查询上次随机结果, IP: {}", ip);
+
+        // 查询该IP的最新历史记录
+        RandomDishRecord record = randomDishRecordService.getLatestRecord(ip);
+        
+        // 如果没有历史记录，返回空列表
+        if (record == null || record.getDishIds() == null || record.getDishIds().isEmpty()) {
+            log.info("✅ 该IP无历史记录");
+            return Result.success(new ArrayList<>());
+        }
+
+        log.info("✅ 返回IP的历史随机记录: {}", record.getDishIds());
+        List<Long> dishIdList = Arrays.stream(record.getDishIds().split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        
+        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000).getRecords();
+        Map<Long, DishVO> dishMap = allDishes.stream()
+                .collect(Collectors.toMap(DishVO::getId, d -> d));
+        
+        List<Map<String, Object>> result = dishIdList.stream()
+                .filter(dishMap::containsKey)
+                .map(id -> {
+                    DishVO dish = dishMap.get(id);
+                    Map<String, Object> dishInfo = new HashMap<>();
+                    dishInfo.put("id", dish.getId());
+                    dishInfo.put("name", dish.getName());
+                    dishInfo.put("image", dish.getImage());
+                    dishInfo.put("tutorialCount", dish.getTutorialCount());
+                    return dishInfo;
+                })
+                .collect(Collectors.toList());
+        
+        return Result.success(result);
+    }
+
+    /**
+     * 获取随机菜谱（每次都生成新的）
      */
     @PostMapping("/random")
-    public Result<List<Map<String, Object>>> getRandomDishes(@RequestBody Map<String, Object> request) {
+    public Result<List<Map<String, Object>>> getRandomDishes(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         Integer count = (Integer) request.getOrDefault("count", 3);
-        log.info("✅ Client端收到获取随机菜谱请求, 数量: {}", count);
+        String ip = getClientIp(httpRequest);
+        log.info("✅ Client端获取随机菜谱, IP: {}, 数量: {}", ip, count);
 
         List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000).getRecords();
 
@@ -82,7 +132,32 @@ public class ClientDishController {
                 })
                 .collect(Collectors.toList());
 
+        // 保存随机结果到数据库
+        String dishIds = shuffled.stream()
+                .limit(count)
+                .map(dish -> String.valueOf(dish.getId()))
+                .collect(Collectors.joining(","));
+        randomDishRecordService.createRecord(ip, dishIds);
+
         return Result.success(result);
+    }
+
+    /**
+     * 获取客户端IP
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // 如果是多个IP，取第一个
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
     }
 
     /**
