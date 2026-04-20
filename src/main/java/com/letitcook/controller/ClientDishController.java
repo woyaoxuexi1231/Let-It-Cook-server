@@ -64,8 +64,12 @@ public class ClientDishController {
      * 获取上次随机结果（进页面时调用）
      */
     @PostMapping("/last-result")
-    public Result<List<Map<String, Object>>> getLastResult(HttpServletRequest httpRequest) {
-        String ip = getClientIp(httpRequest);
+    public Result<List<Map<String, Object>>> getLastResult(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+        // 优先使用前端传递的IP，其次使用请求头
+        String ip = (String) request.get("clientIp");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = getClientIp(httpRequest);
+        }
         log.info("✅ Client端查询上次随机结果, IP: {}", ip);
 
         // 查询该IP的最新历史记录
@@ -110,7 +114,12 @@ public class ClientDishController {
     @PostMapping("/random")
     public Result<List<Map<String, Object>>> getRandomDishes(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         Integer count = (Integer) request.getOrDefault("count", 3);
-        String ip = getClientIp(httpRequest);
+        
+        // 优先使用前端传递的IP，其次使用请求头
+        String ip = (String) request.get("clientIp");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = getClientIp(httpRequest);
+        }
         log.info("✅ Client端获取随机菜谱, IP: {}, 数量: {}", ip, count);
 
         List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000).getRecords();
