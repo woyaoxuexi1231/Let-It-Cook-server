@@ -44,6 +44,18 @@ public class Dish {
     private String cuisine;
 
     /**
+     * 烹饪时长（如：大概15分钟、15分钟到20分钟）
+     */
+    @TableField("cooking_time")
+    private String cookingTime;
+
+    /**
+     * 需要原材料
+     */
+    @TableField("ingredients")
+    private String ingredients;
+
+    /**
      * 创建时间
      */
     @TableField("create_time")

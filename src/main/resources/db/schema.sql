@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS `cook_dish` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `name` VARCHAR(100) NOT NULL COMMENT '菜谱名称',
     `image` VARCHAR(500) DEFAULT NULL COMMENT '菜谱图片URL',
+    `cuisine` VARCHAR(50) DEFAULT NULL COMMENT '菜系（如：川菜、粤菜、湘菜等）',
+    `cooking_time` VARCHAR(50) DEFAULT NULL COMMENT '烹饪时长（如：大概15分钟、15分钟到20分钟）',
+    `ingredients` TEXT DEFAULT NULL COMMENT '需要原材料',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除 0-未删除 1-已删除',
@@ -16,7 +19,8 @@ CREATE TABLE IF NOT EXISTS `cook_dish` (
     PRIMARY KEY (`id`),
     KEY `idx_create_time` (`create_time`),
     KEY `idx_update_time` (`update_time`),
-    KEY `idx_name` (`name`)
+    KEY `idx_name` (`name`),
+    KEY `idx_cuisine` (`cuisine`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜谱表';
 
 -- ==================== 2. 教程表 ====================
@@ -41,19 +45,3 @@ CREATE TABLE IF NOT EXISTS `cook_tutorial` (
     CONSTRAINT `fk_tutorial_dish` FOREIGN KEY (`dish_id`) REFERENCES `cook_dish` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='教程表(必须属于某个菜谱)';
 
--- 注意: 已删除 cook_dish_tutorial 关联表
--- 教程直接通过 dish_id 关联到菜谱,不需要中间表
--- 当菜谱删除时,ON DELETE CASCADE 会自动删除该菜谱下的所有教程
-
--- ==================== 初始化示例数据 ====================
--- 插入示例菜谱
-INSERT INTO `cook_dish` (`name`, `image`) VALUES
-('宫保鸡丁', 'https://example.com/gongbaojiding.jpg'),
-('鱼香肉丝', 'https://example.com/yuxiangrousi.jpg'),
-('糖醋排骨', 'https://example.com/tangcupaigu.jpg');
-
--- 插入示例教程(直接关联到菜谱)
-INSERT INTO `cook_tutorial` (`dish_id`, `title`, `type`, `url`, `sort_order`) VALUES
-(1, '家常做法', 'video', 'https://example.com/video1', 1),
-(1, '美食教程', 'link', 'https://example.com/link1', 2),
-(2, '正宗做法', 'video', 'https://example.com/video2', 1);

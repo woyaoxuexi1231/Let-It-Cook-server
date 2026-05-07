@@ -19,6 +19,9 @@ public class DishDTO {
     private Long id;
     private String name;
     private String image;
+    private String cuisine;
+    private String cookingTime;
+    private String ingredients;
     
     /**
      * 分页参数 - 当前页码
