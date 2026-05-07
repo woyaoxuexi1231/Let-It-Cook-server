@@ -39,11 +39,17 @@ public class DishController {
 
     /**
      * 分页获取所有菜谱列表（包含教程数量）
+     * 支持关键词模糊搜索
      */
     @PostMapping("/list")
     public Result<IPage<DishVO>> getAllDishes(@RequestBody DishListRequest request) {
-        log.info("✅ 收到获取菜谱列表请求, 页码: {}, 每页数量: {}", request.getPageNum(), request.getPageSize());
-        IPage<DishVO> dishes = dishService.getAllDishesWithTutorialCount(request.getPageNum(), request.getPageSize());
+        log.info("✅ 收到获取菜谱列表请求, 页码: {}, 每页数量: {}, 关键词: {}", 
+            request.getPageNum(), request.getPageSize(), request.getKeyword());
+        IPage<DishVO> dishes = dishService.getAllDishesWithTutorialCount(
+            request.getPageNum(), 
+            request.getPageSize(), 
+            request.getKeyword()
+        );
         return Result.success(dishes);
     }
 

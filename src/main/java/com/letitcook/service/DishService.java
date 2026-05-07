@@ -44,10 +44,19 @@ public class DishService {
 
     /**
      * 分页获取所有菜谱列表（包含教程数量）
+     * 支持关键词模糊搜索
      */
-    public IPage<DishVO> getAllDishesWithTutorialCount(Integer pageNum, Integer pageSize) {
+    public IPage<DishVO> getAllDishesWithTutorialCount(Integer pageNum, Integer pageSize, String keyword) {
         Page<Dish> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 模糊搜索：匹配菜谱名称或菜系
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            queryWrapper.like(Dish::getName, keyword)
+                       .or()
+                       .like(Dish::getCuisine, keyword);
+        }
+        
         queryWrapper.orderByDesc(Dish::getCreateTime);
         IPage<Dish> dishPage = dishMapper.selectPage(page, queryWrapper);
 

@@ -19,4 +19,9 @@ public class DishListRequest {
      * 每页数量
      */
     private Integer pageSize = 10;
+    
+    /**
+     * 搜索关键词（模糊匹配菜谱名称和菜系）
+     */
+    private String keyword;
 }
