@@ -115,4 +115,4 @@ INSERT INTO `cook_dish` (`name`, `image`, `cuisine`, `cooking_time`, `ingredient
 ('苏州青团', 'https://picsum.photos/seed/qingtuan/400/300', '苏菜', '大概40分钟', '糯米粉、艾草、豆沙'),
 ('苏州粽子', 'https://picsum.photos/seed/zongzi/400/300', '苏菜', '大概60分钟', '糯米、肉、粽叶'),
 ('苏州月饼', 'https://picsum.photos/seed/yuebing/400/300', '苏菜', '大概40分钟', '面粉、豆沙、油、糖'),
-('苏州糕点', 'https://picsum.photos/seed/gaodian/400/300', '苏菜', '大概30分钟', '面粉、糖、油'),
+('苏州糕点', 'https://picsum.photos/seed/gaodian/400/300', '苏菜', '大概30分钟', '面粉、糖、油');

@@ -101,4 +101,4 @@ INSERT INTO `cook_dish` (`name`, `image`, `cuisine`, `cooking_time`, `ingredient
 ('鸡仔饼', 'https://picsum.photos/seed/jizai/400/300', '粤菜', '大概40分钟', '面粉、冰肉、南乳、蒜、花生'),
 ('云吞面', 'https://picsum.photos/seed/yuntun/400/300', '粤菜', '大概20分钟', '云吞、面条、虾籽、高汤'),
 ('车仔面', 'https://picsum.photos/seed/chezi/400/300', '粤菜', '大概15分钟', '面条、各种配料、咖喱汁'),
-('碗仔翅', 'https://picsum.photos/seed/wanzai/400/300', '粤菜', '大概20分钟', '粉丝、香菇、木耳、鸡肉、高汤'),
+('碗仔翅', 'https://picsum.photos/seed/wanzai/400/300', '粤菜', '大概20分钟', '粉丝、香菇、木耳、鸡肉、高汤')；
