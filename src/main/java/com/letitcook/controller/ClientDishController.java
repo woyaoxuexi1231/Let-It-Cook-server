@@ -44,7 +44,7 @@ public class ClientDishController {
     @PostMapping("/list")
     public Result<List<Map<String, Object>>> getAllDishes() {
         log.info("✅ Client端收到获取菜谱列表请求");
-        List<DishVO> dishes = dishService.getAllDishesWithTutorialCount(1, 10000).getRecords();
+        List<DishVO> dishes = dishService.getAllDishesWithTutorialCount(1, 10000, null).getRecords();
 
         List<Map<String, Object>> result = dishes.stream()
                 .map(dish -> {
@@ -88,7 +88,7 @@ public class ClientDishController {
                 .map(Long::parseLong)
                 .collect(Collectors.toList());
         
-        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000).getRecords();
+        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000,null).getRecords();
         Map<Long, DishVO> dishMap = allDishes.stream()
                 .collect(Collectors.toMap(DishVO::getId, d -> d));
         
@@ -122,7 +122,7 @@ public class ClientDishController {
         }
         log.info("✅ Client端获取随机菜谱, IP: {}, 数量: {}", ip, count);
 
-        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000).getRecords();
+        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000, null).getRecords();
 
         // 随机打乱
         List<DishVO> shuffled = new ArrayList<>(allDishes);
