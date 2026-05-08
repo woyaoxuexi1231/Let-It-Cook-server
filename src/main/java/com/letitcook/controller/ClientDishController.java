@@ -52,6 +52,9 @@ public class ClientDishController {
                     dishInfo.put("id", dish.getId());
                     dishInfo.put("name", dish.getName());
                     dishInfo.put("image", dish.getImage());
+                    dishInfo.put("cuisine", dish.getCuisine());
+                    dishInfo.put("cookingTime", dish.getCookingTime());
+                    dishInfo.put("ingredients", dish.getIngredients());
                     dishInfo.put("tutorialCount", dish.getTutorialCount());
                     return dishInfo;
                 })
@@ -100,6 +103,9 @@ public class ClientDishController {
                     dishInfo.put("id", dish.getId());
                     dishInfo.put("name", dish.getName());
                     dishInfo.put("image", dish.getImage());
+                    dishInfo.put("cuisine", dish.getCuisine());
+                    dishInfo.put("cookingTime", dish.getCookingTime());
+                    dishInfo.put("ingredients", dish.getIngredients());
                     dishInfo.put("tutorialCount", dish.getTutorialCount());
                     return dishInfo;
                 })
@@ -136,6 +142,9 @@ public class ClientDishController {
                     dishInfo.put("id", dish.getId());
                     dishInfo.put("name", dish.getName());
                     dishInfo.put("image", dish.getImage());
+                    dishInfo.put("cuisine", dish.getCuisine());
+                    dishInfo.put("cookingTime", dish.getCookingTime());
+                    dishInfo.put("ingredients", dish.getIngredients());
                     dishInfo.put("tutorialCount", dish.getTutorialCount());
                     return dishInfo;
                 })
@@ -191,6 +200,9 @@ public class ClientDishController {
         result.put("id", dish.getId());
         result.put("name", dish.getName());
         result.put("image", dish.getImage());
+        result.put("cuisine", dish.getCuisine());
+        result.put("cookingTime", dish.getCookingTime());
+        result.put("ingredients", dish.getIngredients());
         result.put("tutorials", tutorials);
 
         return Result.success(result);
