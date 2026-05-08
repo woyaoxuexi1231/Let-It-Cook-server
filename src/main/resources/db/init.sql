@@ -15,7 +15,6 @@ INSERT INTO `cook_dish` (`name`, `image`, `cuisine`, `cooking_time`, `ingredient
 ('白切鸡', 'https://picsum.photos/seed/baiqie/400/300', '粤菜', '大概30分钟', '三黄鸡、姜、葱、盐、料酒、香油'),
 ('糖醋排骨', 'https://picsum.photos/seed/tangcu/400/300', '粤菜', '25分钟到30分钟', '排骨、白糖、醋、生抽、料酒、姜片、葱'),
 ('清蒸鲈鱼', 'https://picsum.photos/seed/qingzheng/400/300', '粤菜', '大概15分钟', '鲈鱼、姜、葱、料酒、蒸鱼豉油、热油'),
-('叉烧', 'https://picsum.photos/seed/chashao/400/300', '粤菜', '40分钟到50分钟', '梅花肉、叉烧酱、蜂蜜、生抽、料酒、姜、蒜'),
 ('干炒牛河', 'https://picsum.photos/seed/niuhe/400/300', '粤菜', '大概10分钟', '河粉、牛肉、芽菜、葱、生抽、老抽、油'),
 ('煲仔饭', 'https://picsum.photos/seed/baozai/400/300', '粤菜', '30分钟到40分钟', '大米、腊肠、腊肉、鸡蛋、菜心、生抽、香油'),
 
