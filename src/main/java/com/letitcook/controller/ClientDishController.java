@@ -6,6 +6,7 @@ import com.letitcook.entity.RandomDishRecord;
 import com.letitcook.entity.Tutorial;
 import com.letitcook.service.DishService;
 import com.letitcook.service.RandomDishRecordService;
+import com.letitcook.vo.DishDetailVO;
 import com.letitcook.vo.DishVO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,46 +39,28 @@ public class ClientDishController {
     private final RandomDishRecordService randomDishRecordService;
 
     /**
-     * 获取所有菜谱列表（简化版，仅包含id、name、image、tutorialCount）
+     * 获取所有菜谱列表
      */
     @PostMapping("/list")
-    public Result<List<Map<String, Object>>> getAllDishes() {
+    public Result<List<DishVO>> getAllDishes() {
         log.info("✅ Client端收到获取菜谱列表请求");
         List<DishVO> dishes = dishService.getAllDishesWithTutorialCount(1, 10000, null).getRecords();
-
-        List<Map<String, Object>> result = dishes.stream()
-                .map(dish -> {
-                    Map<String, Object> dishInfo = new HashMap<>();
-                    dishInfo.put("id", dish.getId());
-                    dishInfo.put("name", dish.getName());
-                    dishInfo.put("image", dish.getImage());
-                    dishInfo.put("cuisine", dish.getCuisine());
-                    dishInfo.put("cookingTime", dish.getCookingTime());
-                    dishInfo.put("ingredients", dish.getIngredients());
-                    dishInfo.put("tutorialCount", dish.getTutorialCount());
-                    return dishInfo;
-                })
-                .collect(Collectors.toList());
-
-        return Result.success(result);
+        return Result.success(dishes);
     }
 
     /**
      * 获取上次随机结果（进页面时调用）
      */
     @PostMapping("/last-result")
-    public Result<List<Map<String, Object>>> getLastResult(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
-        // 优先使用前端传递的IP，其次使用请求头
+    public Result<List<DishVO>> getLastResult(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         String ip = (String) request.get("clientIp");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = getClientIp(httpRequest);
         }
         log.info("✅ Client端查询上次随机结果, IP: {}", ip);
 
-        // 查询该IP的最新历史记录
         RandomDishRecord record = randomDishRecordService.getLatestRecord(ip);
-        
-        // 如果没有历史记录，返回空列表
+
         if (record == null || record.getDishIds() == null || record.getDishIds().isEmpty()) {
             log.info("✅ 该IP无历史记录");
             return Result.success(new ArrayList<>());
@@ -90,27 +72,16 @@ public class ClientDishController {
                 .filter(s -> !s.isEmpty())
                 .map(Long::parseLong)
                 .collect(Collectors.toList());
-        
-        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000,null).getRecords();
+
+        List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000, null).getRecords();
         Map<Long, DishVO> dishMap = allDishes.stream()
                 .collect(Collectors.toMap(DishVO::getId, d -> d));
-        
-        List<Map<String, Object>> result = dishIdList.stream()
+
+        List<DishVO> result = dishIdList.stream()
                 .filter(dishMap::containsKey)
-                .map(id -> {
-                    DishVO dish = dishMap.get(id);
-                    Map<String, Object> dishInfo = new HashMap<>();
-                    dishInfo.put("id", dish.getId());
-                    dishInfo.put("name", dish.getName());
-                    dishInfo.put("image", dish.getImage());
-                    dishInfo.put("cuisine", dish.getCuisine());
-                    dishInfo.put("cookingTime", dish.getCookingTime());
-                    dishInfo.put("ingredients", dish.getIngredients());
-                    dishInfo.put("tutorialCount", dish.getTutorialCount());
-                    return dishInfo;
-                })
+                .map(dishMap::get)
                 .collect(Collectors.toList());
-        
+
         return Result.success(result);
     }
 
@@ -118,10 +89,9 @@ public class ClientDishController {
      * 获取随机菜谱（每次都生成新的）
      */
     @PostMapping("/random")
-    public Result<List<Map<String, Object>>> getRandomDishes(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+    public Result<List<DishVO>> getRandomDishes(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         Integer count = (Integer) request.getOrDefault("count", 3);
-        
-        // 优先使用前端传递的IP，其次使用请求头
+
         String ip = (String) request.get("clientIp");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = getClientIp(httpRequest);
@@ -130,32 +100,45 @@ public class ClientDishController {
 
         List<DishVO> allDishes = dishService.getAllDishesWithTutorialCount(1, 10000, null).getRecords();
 
-        // 随机打乱
         List<DishVO> shuffled = new ArrayList<>(allDishes);
         java.util.Collections.shuffle(shuffled);
 
-        // 取指定数量
-        List<Map<String, Object>> result = shuffled.stream()
+        List<DishVO> result = shuffled.stream()
                 .limit(count)
-                .map(dish -> {
-                    Map<String, Object> dishInfo = new HashMap<>();
-                    dishInfo.put("id", dish.getId());
-                    dishInfo.put("name", dish.getName());
-                    dishInfo.put("image", dish.getImage());
-                    dishInfo.put("cuisine", dish.getCuisine());
-                    dishInfo.put("cookingTime", dish.getCookingTime());
-                    dishInfo.put("ingredients", dish.getIngredients());
-                    dishInfo.put("tutorialCount", dish.getTutorialCount());
-                    return dishInfo;
-                })
                 .collect(Collectors.toList());
 
-        // 保存随机结果到数据库
-        String dishIds = shuffled.stream()
-                .limit(count)
+        String dishIds = result.stream()
                 .map(dish -> String.valueOf(dish.getId()))
                 .collect(Collectors.joining(","));
         randomDishRecordService.createRecord(ip, dishIds);
+
+        return Result.success(result);
+    }
+
+    /**
+     * 获取菜谱详情（包含教程信息）
+     */
+    @PostMapping("/detail")
+    public Result<DishDetailVO> getDishDetail(@RequestBody Map<String, Object> request) {
+        Long id = Long.parseLong(String.valueOf(request.get("id")));
+        log.info("✅ Client端收到获取菜谱详情请求, ID: {}", id);
+
+        Dish dish = dishService.getById(id);
+        if (dish == null) {
+            log.warn("⚠️ 菜谱不存在, ID: {}", id);
+            return Result.error("❌ 菜谱不存在");
+        }
+
+        List<Tutorial> tutorials = dishService.getTutorialsByDishId(id);
+
+        DishDetailVO result = new DishDetailVO();
+        result.setId(dish.getId());
+        result.setName(dish.getName());
+        result.setImage(dish.getImage());
+        result.setCuisine(dish.getCuisine());
+        result.setCookingTime(dish.getCookingTime());
+        result.setIngredients(dish.getIngredients());
+        result.setTutorials(tutorials);
 
         return Result.success(result);
     }
@@ -171,40 +154,9 @@ public class ClientDishController {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        // 如果是多个IP，取第一个
         if (ip != null && ip.contains(",")) {
             ip = ip.split(",")[0].trim();
         }
         return ip;
-    }
-
-    /**
-     * 获取菜谱详情（包含教程信息）
-     */
-    @PostMapping("/detail")
-    public Result<Map<String, Object>> getDishDetail(@RequestBody Map<String, Object> request) {
-        Long id = Long.parseLong(String.valueOf(request.get("id")));
-        log.info("✅ Client端收到获取菜谱详情请求, ID: {}", id);
-
-        Dish dish = dishService.getById(id);
-        if (dish == null) {
-            log.warn("⚠️ 菜谱不存在, ID: {}", id);
-            return Result.error("❌ 菜谱不存在");
-        }
-
-        // 获取教程列表
-        List<Tutorial> tutorials = dishService.getTutorialsByDishId(id);
-
-        // 构建返回结果
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", dish.getId());
-        result.put("name", dish.getName());
-        result.put("image", dish.getImage());
-        result.put("cuisine", dish.getCuisine());
-        result.put("cookingTime", dish.getCookingTime());
-        result.put("ingredients", dish.getIngredients());
-        result.put("tutorials", tutorials);
-
-        return Result.success(result);
     }
 }

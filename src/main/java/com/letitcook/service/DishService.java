@@ -10,6 +10,8 @@ import com.letitcook.entity.Tutorial;
 import com.letitcook.mapper.DishMapper;
 import com.letitcook.mapper.TutorialMapper;
 import com.letitcook.vo.DishVO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,15 +66,7 @@ public class DishService {
         List<DishVO> dishVOList = dishPage.getRecords().stream()
                 .map(dish -> {
                     DishVO vo = new DishVO();
-                    vo.setId(dish.getId());
-                    vo.setName(dish.getName());
-                    vo.setImage(dish.getImage());
-                    vo.setCuisine(dish.getCuisine());
-                    vo.setCreateTime(dish.getCreateTime());
-                    vo.setUpdateTime(dish.getUpdateTime());
-                    vo.setIsDeleted(dish.getIsDeleted());
-                    vo.setCreateBy(dish.getCreateBy());
-                    vo.setUpdateBy(dish.getUpdateBy());
+                    BeanUtils.copyProperties(dish, vo);
                     // 计算教程数量
                     int count = getTutorialsByDishId(dish.getId()).size();
                     vo.setTutorialCount(count);
