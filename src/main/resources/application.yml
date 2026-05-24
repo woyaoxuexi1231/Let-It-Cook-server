@@ -14,7 +14,7 @@ spring:
       file-size-threshold: 2MB  # 超过 2MB 写入磁盘
   # 数据源配置
   datasource:
-    url: jdbc:mysql://192.168.2.102:3306/test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    url: jdbc:mysql://192.168.3.100:3306/test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
