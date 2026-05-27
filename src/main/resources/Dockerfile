@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:8-jre
 
 ARG JAR_FILE=let-it-cook.jar
 ENV TZ=Asia/Shanghai
