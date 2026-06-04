@@ -8,7 +8,7 @@ import com.letitcook.service.DishService;
 import com.letitcook.service.RandomDishRecordService;
 import com.letitcook.vo.DishDetailVO;
 import com.letitcook.vo.DishVO;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
